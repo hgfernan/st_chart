@@ -152,7 +152,7 @@ def main() -> int:
 
     else:
         chosen_list = list(symbol_sel)
-        st.write(f'Chosen: {chosen_list}')
+        # st.write(f'Chosen: {chosen_list}')
         
         # TODO filter the data to the chosen symbols
         data = pd.DataFrame()
@@ -160,7 +160,7 @@ def main() -> int:
         for chosen in chosen_list:
             data[chosen] = all_data[chosen].tolist()
         
-        print(f'data\n{data}')
+        # print(f'data\n{data}')
 
         # TODO set the table title 
         title : str = "### Cryptocoin prices (USDT)"
@@ -171,7 +171,7 @@ def main() -> int:
             data = data.set_index('Date')
             data, limits = scale_data(data)
             # TODO present the original data limits as a table
-            st.write('### Original data limits', limits)
+            st.write('### Original data limits', limits.sort_index())
             
             title = "### Cryptocoin prices normalized to the interval [0, 1]"
             
@@ -181,7 +181,7 @@ def main() -> int:
         # TODO meld the dataframe to be plotted
         # plt_data = pd.melt(data.reset_index(), id_vars=["Date"])
         plt_data = pd.melt(data, id_vars=["Date"])
-        print(f'plt_data:\n{plt_data}')
+        # print(f'plt_data:\n{plt_data}')
 
         # TODO draw the chart of the chosen symbols
         chart = (
