@@ -8,17 +8,21 @@ Created on Thu Apr  4 16:02:35 2024
 @author: user
 """
 
-import sys          # exit()
-import pandas as pd # read_csv(), class DataFrame
+import sys    # exit()
 
-from typing   import List, Tuple
+from typing   import Tuple
+
+import pandas as pd # read_csv(), class DataFrame
+import seaborn as sn
+import matplotlib.pyplot as plt
 
 import altair as alt
 import streamlit as st
 
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing    import MinMaxScaler
+from statsmodels.tsa.seasonal import seasonal_decompose
 
-def load_data():
+def load_data() -> pd.DataFrame:
     data = pd.DataFrame( \
         {
         'Date' : [
@@ -80,6 +84,8 @@ def load_data():
         }
     )
         
+    data['Date'] = pd.to_datetime(data['Date'], format='%Y-%m-%d')
+    
     return data
 
 def scale_data(data : pd.DataFrame) -> pd.DataFrame:
@@ -194,7 +200,44 @@ def main() -> int:
             )
         )
         st.altair_chart(chart, use_container_width=True)
-        
+       
+        if len(chosen_list) == 1:
+            # TODO treat it like a time series
+            
+            # BUG make sure `data` is indexed
+            data = data.set_index('Date')
+            
+            result = seasonal_decompose(data, model='multiplicative')
+            figure = result.plot()
+            
+            st.pyplot(figure)
+
+        else:
+            # TODO does multivariable statistics
+            
+            # BUG make sure `data` is indexed
+            data = data.set_index('Date')
+            
+            corr_matrix = data.corr()
+            
+            corr_title = 'Pearson correlation between cryptoins'
+            should_square : bool = st.toggle('Square the correlations')
+            if should_square:
+                r2 = corr_matrix.map(lambda x: x * x)
+                corr_matrix = r2
+                
+                # TODO change heatmap titles
+                corr_title = 'Squared Pearson correlation between cryptoins'
+
+            fig,ax = plt.subplots() 
+            fig.suptitle(corr_title)
+            
+            # TODO set heatmap titles
+            
+            sn.heatmap(corr_matrix, annot=True, ax=ax)
+            
+            st.pyplot(fig)
+
 
     # Normal function return
     return 0
