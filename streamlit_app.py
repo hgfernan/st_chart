@@ -208,8 +208,22 @@ def main() -> int:
             data = data.set_index('Date')
             
             result = seasonal_decompose(data, model='multiplicative')
-            figure = result.plot()
+            # figure = result.plot()
             
+            # TODO create 4 piled plots: observed, trend, seasonal, resid
+            figure, ax = plt.subplot()
+            
+            # TODO set titles
+            
+            # TODO plot observed data in memory
+            
+            # TODO plot trend data in memory 
+            
+            # TODO plot seasonal data in memory 
+            
+            # TODO plot residual data in memory 
+            
+            # TODO send the final image to streamlit
             st.pyplot(figure)
 
         else:
@@ -228,11 +242,10 @@ def main() -> int:
                 
                 # TODO change heatmap titles
                 corr_title = 'Squared Pearson correlation between cryptoins'
-
+                
+            # TODO set heatmap titles
             fig,ax = plt.subplots() 
             fig.suptitle(corr_title)
-            
-            # TODO set heatmap titles
             
             sn.heatmap(corr_matrix, annot=True, ax=ax)
             
