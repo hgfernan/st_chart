@@ -16,6 +16,8 @@ import pandas as pd # read_csv(), class DataFrame
 import seaborn as sn
 import matplotlib.pyplot as plt
 
+from matplotlib.dates import DateFormatter
+
 import altair as alt
 import streamlit as st
 
@@ -211,17 +213,28 @@ def main() -> int:
             # figure = result.plot()
             
             # TODO create 4 piled plots: observed, trend, seasonal, resid
-            figure, ax = plt.subplot()
+            figure, axs = plt.subplots(4)
             
             # TODO set titles
+            figure.suptitle('Decomposition of the time series')
             
             # TODO plot observed data in memory
+            axs[0].plot(data.index, result.observed)
+            axs[0].label_outer()
             
             # TODO plot trend data in memory 
+            axs[1].plot(data.index, result.trend)
+            axs[1].label_outer()
             
             # TODO plot seasonal data in memory 
+            axs[2].plot(data.index, result.seasonal)
+            axs[2].label_outer()
             
             # TODO plot residual data in memory 
+            # Define the date format
+            date_form = DateFormatter("%m-%d")
+            axs[3].xaxis.set_major_formatter(date_form)
+            axs[3].plot(data.index, result.resid)
             
             # TODO send the final image to streamlit
             st.pyplot(figure)
