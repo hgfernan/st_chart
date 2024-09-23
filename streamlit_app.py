@@ -97,7 +97,7 @@ def scale_data(data : pd.DataFrame) -> pd.DataFrame:
     
     # TODO get the limits to the variables 
     names = ['Mininum', 'Maximum']
-    limits[''] = names
+    limits['Extrema'] = names
           
     column_list = data.columns.tolist()      
     for column in column_list:
@@ -107,7 +107,7 @@ def scale_data(data : pd.DataFrame) -> pd.DataFrame:
         
         limits[column] = lim
     
-    limits = limits.set_index('')
+    limits = limits.set_index('Extrema')
     
     # data = data.set_index('Date')
 
@@ -131,14 +131,14 @@ def scale_data(data : pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> int:
-    # TODO get all data
+    # HINT Get all data
     all_data = load_data()
     
-    # TODO extract the symbols from the list
+    # HINT Extract the symbols from the list
     symbol_list = all_data.columns.tolist()
     symbol_list.remove('Date')
     
-    # TODO present the data scaling toggle
+    # HINT Present the data scaling toggle
     should_scale : bool = st.toggle('Scale the data')
 
     if should_scale:
@@ -149,7 +149,7 @@ def main() -> int:
     else:
         st.write('Data scaling inactive!')
             
-    # TODO create a dropbox with all the symbols found & some default
+    # HINT Create a dropbox with all the symbols found & some default
     symbol_sel = st.multiselect(
         "Choose symbols", symbol_list, 
         [ symbol_list[ind] for ind in range(min(2, len(symbol_list)) )] 
@@ -162,7 +162,7 @@ def main() -> int:
         chosen_list = list(symbol_sel)
         # st.write(f'Chosen: {chosen_list}')
         
-        # TODO filter the data to the chosen symbols
+        # HINT filter the data to the chosen symbols
         data = pd.DataFrame()
         data['Date'] = all_data['Date'].tolist()
         for chosen in chosen_list:
@@ -179,7 +179,8 @@ def main() -> int:
             data = data.set_index('Date')
             data, limits = scale_data(data)
             # TODO present the original data limits as a table
-            st.write('### Original data limits', limits.sort_index())
+            st.write('### Original data limits')
+            st.table(limits.sort_index())
             
             title = "### Cryptocoin prices normalized to the interval [0, 1]"
             
@@ -240,6 +241,7 @@ def main() -> int:
             axs[3].xaxis.set_major_formatter(date_form)
             axs[3].plot(data.index, result.resid)
             axs[3].set_ylabel('Residual')
+            axs[3].tick_params(axis='x', labelrotation=45)
             
             # TODO send the final image to streamlit
             st.pyplot(figure)
