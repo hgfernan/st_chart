@@ -209,7 +209,8 @@ def main() -> int:
             # BUG make sure `data` is indexed
             data = data.set_index('Date')
             
-            result = seasonal_decompose(data, model='multiplicative')
+            # result = seasonal_decompose(data, model='multiplicative')
+            result = seasonal_decompose(data, model='additive')
             # figure = result.plot()
             
             # TODO create 4 piled plots: observed, trend, seasonal, resid
@@ -221,20 +222,24 @@ def main() -> int:
             # TODO plot observed data in memory
             axs[0].plot(data.index, result.observed)
             axs[0].label_outer()
+            axs[0].set_ylabel('Observed')
             
             # TODO plot trend data in memory 
             axs[1].plot(data.index, result.trend)
             axs[1].label_outer()
+            axs[1].set_ylabel('Trend')
             
             # TODO plot seasonal data in memory 
             axs[2].plot(data.index, result.seasonal)
             axs[2].label_outer()
+            axs[2].set_ylabel('Seasonal')
             
             # TODO plot residual data in memory 
             # Define the date format
             date_form = DateFormatter("%m-%d")
             axs[3].xaxis.set_major_formatter(date_form)
             axs[3].plot(data.index, result.resid)
+            axs[3].set_ylabel('Residual')
             
             # TODO send the final image to streamlit
             st.pyplot(figure)
@@ -247,7 +252,7 @@ def main() -> int:
             
             corr_matrix = data.corr()
             
-            corr_title = 'Pearson correlation between cryptoins'
+            corr_title = 'Pearson correlation between cryptocoins'
             should_square : bool = st.toggle('Square the correlations')
             if should_square:
                 r2 = corr_matrix.map(lambda x: x * x)
