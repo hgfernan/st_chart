@@ -23,6 +23,7 @@ import streamlit as st
 
 from sklearn.preprocessing    import MinMaxScaler
 from statsmodels.tsa.seasonal import seasonal_decompose
+# from statsmodels.tsa.seasonal import STL
 
 def load_data() -> pd.DataFrame:
     data = pd.DataFrame( \
@@ -212,6 +213,7 @@ def main() -> int:
             
             # result = seasonal_decompose(data, model='multiplicative')
             result = seasonal_decompose(data, model='additive')
+            # result = STL(data).fit()
             # figure = result.plot()
             
             # TODO create 4 piled plots: observed, trend, seasonal, resid
