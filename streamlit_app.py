@@ -9,8 +9,9 @@ Created on Thu Apr  4 16:02:35 2024
 """
 
 import sys    # exit()
+import copy   # copy()
 
-from typing   import Tuple
+from typing   import Tuple, List
 
 import pandas as pd # read_csv(), class DataFrame
 import seaborn as sn
@@ -130,149 +131,243 @@ def scale_data(data : pd.DataFrame) -> pd.DataFrame:
     # Normal function termination
     return result
 
+class App: 
+    def __init__(self, data : pd.DataFrame) -> None:
+        self.data : pd.DataFrame = data 
+        self.symbol_list : List[str] = self.data.columns.tolist()
+        self.symbol_list.remove('Date')
+
+        # HINT Minimum between 2 adn symbol_list length
+        self.symbol_sel : List[str] = self.symbol_list[:2]
+
+        self.should_scale = False
+        self.should_square = False
+        
+        # Normal function termination
+        return
+    
+    def get_should_scale(self) -> bool:
+        return self.should_scale
+    
+    def get_should_square(self) -> bool:
+        return self.should_scale
+    
+    def get_data(self) -> pd.DataFrame:
+        result : pd.DataFrame = self.data.copy()
+        
+        # Normal function termination
+        return result
+    
+    def get_symbol_list(self) -> List[str]:
+        result : List[str] = copy.copy(self.symbol_list)
+        
+        # Normal function termination
+        return result
+    
+    def get_symbol_sel(self) -> List[str]:
+        result : List[str] = copy.copy(self.symbol_sel)
+        
+        # Normal function termination
+        return result
+    
+    def set_should_scale(self, should_scale : bool) -> bool:
+        result: bool = self.should_scale
+        
+        self.should_scale = should_scale
+        return result
+    
+    def set_should_square(self, should_square : bool) -> bool:
+        result : bool = self.should_square
+        
+        self.should_square = should_square
+        return result
+    
+    def set_symbol_sel(self, symbol_sel) -> List[str]:
+        result : List[str] = copy.copy(self.symbol_sel)
+        
+        self.symbol_sel = copy.copy(symbol_sel)
+        
+        # Normal function termination
+        return result
+    
+    def show_data(self) -> bool:
+        return True 
+    
+    def show_statistics(self) -> bool:
+        return True 
 
 def main() -> int:
     # HINT Get all data
     all_data = load_data()
     
+    data_hdr    = st.empty()
+    full_page   = st.empty()
+    cardinality = st.empty()
+    
     # HINT Extract the symbols from the list
     symbol_list = all_data.columns.tolist()
     symbol_list.remove('Date')
+
+    with full_page.container():
+        cardinality.empty()
+        data_hdr.empty()
+        
+        # HINT Present the data scaling toggle
+        should_scale : bool = st.toggle('Scale the data')
     
-    # HINT Present the data scaling toggle
-    should_scale : bool = st.toggle('Scale the data')
-
-    if should_scale:
-        st.write('Data scaling activated')
-
-        # TODO generate a table with data maximum and minimum
-        
-    else:
-        st.write('Data scaling inactive!')
-            
-    # HINT Create a dropbox with all the symbols found & some default
-    symbol_sel = st.multiselect(
-        "Choose symbols", symbol_list, 
-        [ symbol_list[ind] for ind in range(min(2, len(symbol_list)) )] 
-    )
-        
-    if not symbol_sel:
-        st.error("Please select at least one symbol.")
-
-    else:
-        chosen_list = list(symbol_sel)
-        # st.write(f'Chosen: {chosen_list}')
-        
-        # HINT filter the data to the chosen symbols
-        data = pd.DataFrame()
-        data['Date'] = all_data['Date'].tolist()
-        for chosen in chosen_list:
-            data[chosen] = all_data[chosen].tolist()
-        
-        # print(f'data\n{data}')
-
-        # TODO set the table title 
-        title : str = "### Cryptocoin prices (USDT)"
-            
-        # TODO if data should be scaled
         if should_scale:
-            # TODO set index to date to avoid it being used in scaling
-            data = data.set_index('Date')
-            data, limits = scale_data(data)
-            # TODO present the original data limits as a table
-            st.write('### Original data limits')
-            st.table(limits.sort_index())
+            st.write('Data scaling activated')
+    
+            # TODO generate a table with data maximum and minimum
             
-            title = "### Cryptocoin prices normalized to the interval [0, 1]"
-            
-        # TODO present the data
-        st.write(title, data.sort_index())
-                
-        # TODO meld the dataframe to be plotted
-        # plt_data = pd.melt(data.reset_index(), id_vars=["Date"])
-        plt_data = pd.melt(data, id_vars=["Date"])
-        # print(f'plt_data:\n{plt_data}')
-
-        # TODO draw the chart of the chosen symbols
-        chart = (
-            alt.Chart(plt_data)
-            .mark_area(opacity=0.3)
-            .encode(
-                x="Date:T",
-                y=alt.Y("value:Q", stack=None),
-                color="variable:N",
-            )
-        )
-        st.altair_chart(chart, use_container_width=True)
-       
-        if len(chosen_list) == 1:
-            # TODO treat it like a time series
-            
-            # BUG make sure `data` is indexed
-            data = data.set_index('Date')
-            
-            # result = seasonal_decompose(data, model='multiplicative')
-            result = seasonal_decompose(data, model='additive')
-            # result = STL(data).fit()
-            # figure = result.plot()
-            
-            # TODO create 4 piled plots: observed, trend, seasonal, resid
-            figure, axs = plt.subplots(4)
-            
-            # TODO set titles
-            figure.suptitle('Decomposition of the time series')
-            
-            # TODO plot observed data in memory
-            axs[0].plot(data.index, result.observed)
-            axs[0].label_outer()
-            axs[0].set_ylabel('Observed')
-            
-            # TODO plot trend data in memory 
-            axs[1].plot(data.index, result.trend)
-            axs[1].label_outer()
-            axs[1].set_ylabel('Trend')
-            
-            # TODO plot seasonal data in memory 
-            axs[2].plot(data.index, result.seasonal)
-            axs[2].label_outer()
-            axs[2].set_ylabel('Seasonal')
-            
-            # TODO plot residual data in memory 
-            # Define the date format
-            date_form = DateFormatter("%m-%d")
-            axs[3].xaxis.set_major_formatter(date_form)
-            axs[3].plot(data.index, result.resid)
-            axs[3].set_ylabel('Residual')
-            axs[3].tick_params(axis='x', labelrotation=45)
-            
-            # TODO send the final image to streamlit
-            st.pyplot(figure)
-
         else:
-            # TODO does multivariable statistics
-            
-            # BUG make sure `data` is indexed
-            data = data.set_index('Date')
-            
-            corr_matrix = data.corr()
-            
-            corr_title = 'Pearson correlation between cryptocoins'
-            should_square : bool = st.toggle('Square the correlations')
-            if should_square:
-                r2 = corr_matrix.map(lambda x: x * x)
-                corr_matrix = r2
+            st.write('Data scaling inactive!')
                 
-                # TODO change heatmap titles
-                corr_title = 'Squared Pearson correlation between cryptoins'
-                
-            # TODO set heatmap titles
-            fig,ax = plt.subplots() 
-            fig.suptitle(corr_title)
+        # HINT Create a dropbox with all the symbols found & some default
+        symbol_sel = st.multiselect(
+            "Choose symbols", symbol_list, 
+            [ symbol_list[ind] for ind in range(min(2, len(symbol_list)) )] 
+        )
             
-            sn.heatmap(corr_matrix, annot=True, ax=ax)
+        if not symbol_sel:
+            st.error("Please select at least one symbol.")
+    
+        else:
+            chosen_list = list(symbol_sel)
+            # st.write(f'Chosen: {chosen_list}')
             
-            st.pyplot(fig)
+            # HINT filter the data to the chosen symbols
+            data = pd.DataFrame()
+            data['Date'] = all_data['Date'].tolist()
+            for chosen in chosen_list:
+                data[chosen] = all_data[chosen].tolist()
+            
+            # print(f'data\n{data}')
 
+            # TODO set the table title 
+            title : str = "### Cryptocoin prices (USDT)"
+            
+            # TODO if data should be scaled
+            with data_hdr.container():
+                if should_scale:
+                    # TODO set index to date to avoid it being used in scaling
+                    data = data.set_index('Date')
+                    data, limits = scale_data(data)
+                    # TODO present the original data limits as a table
+                    st.write('### Original data limits')
+                    st.table(limits.sort_index())
+                    
+                    title = "### Cryptocoin prices normalized to the interval [0, 1]"
+                
+                    # TODO present the data
+                    st.write(title, data.sort_index())
+                
+                    # TODO meld the dataframe to be plotted
+                    # plt_data = pd.melt(data.reset_index(), id_vars=["Date"])
+                    plt_data = pd.melt(data, id_vars=["Date"])
+                    # print(f'plt_data:\n{plt_data}')
+            
+                    # TODO draw the chart of the chosen symbols
+                    chart = (
+                        alt.Chart(plt_data)
+                        .mark_area(opacity=0.3)
+                        .encode(
+                            x="Date:T",
+                            y=alt.Y("value:Q", stack=None),
+                            color="variable:N",
+                        )
+                    )
+                    st.altair_chart(chart, use_container_width=True)
+                
+                else:
+                    # TODO present the data
+                    st.write(title, data.sort_index())                    
+                
+                    # TODO meld the dataframe to be plotted
+                    # plt_data = pd.melt(data.reset_index(), id_vars=["Date"])
+                    plt_data = pd.melt(data, id_vars=["Date"])
+                    # print(f'plt_data:\n{plt_data}')
+            
+                    # TODO draw the chart of the chosen symbols
+                    chart = (
+                        alt.Chart(plt_data)
+                        .mark_area(opacity=0.3)
+                        .encode(
+                            x="Date:T",
+                            y=alt.Y("value:Q", stack=None),
+                            color="variable:N",
+                        )
+                    )
+                    st.altair_chart(chart, use_container_width=True)
+        
+            with cardinality.container():
+                if len(chosen_list) == 1:
+                    # TODO treat it like a time series
+                    
+                    # BUG make sure `data` is indexed
+                    data = data.set_index('Date')
+                    
+                    # result = seasonal_decompose(data, model='multiplicative')
+                    result = seasonal_decompose(data, model='additive')
+                    # result = STL(data).fit()
+                    # figure = result.plot()
+                    
+                    # TODO create 4 piled plots: observed, trend, seasonal, resid
+                    figure, axs = plt.subplots(4)
+                    
+                    # TODO set titles
+                    figure.suptitle('Decomposition of the time series')
+                    
+                    # TODO plot observed data in memory
+                    axs[0].plot(data.index, result.observed)
+                    axs[0].label_outer()
+                    axs[0].set_ylabel('Observed')
+                    
+                    # TODO plot trend data in memory 
+                    axs[1].plot(data.index, result.trend)
+                    axs[1].label_outer()
+                    axs[1].set_ylabel('Trend')
+                    
+                    # TODO plot seasonal data in memory 
+                    axs[2].plot(data.index, result.seasonal)
+                    axs[2].label_outer()
+                    axs[2].set_ylabel('Seasonal')
+                    
+                    # TODO plot residual data in memory 
+                    # Define the date format
+                    date_form = DateFormatter("%m-%d")
+                    axs[3].xaxis.set_major_formatter(date_form)
+                    axs[3].plot(data.index, result.resid)
+                    axs[3].set_ylabel('Residual')
+                    axs[3].tick_params(axis='x', labelrotation=45)
+                    
+                    # TODO send the final image to streamlit
+                    st.pyplot(figure)
+        
+                else:
+                    # TODO does multivariable statistics
+                    
+                    # BUG make sure `data` is indexed
+                    data = data.set_index('Date')
+                    
+                    corr_matrix = data.corr()
+                    
+                    corr_title = 'Pearson correlation between cryptocoins'
+                    should_square : bool = st.toggle('Square the correlations')
+                    if should_square:
+                        r2 = corr_matrix.map(lambda x: x * x)
+                        corr_matrix = r2
+                        
+                        # TODO change heatmap titles
+                        corr_title = 'Squared Pearson correlation between cryptoins'
+                        
+                    # TODO set heatmap titles
+                    fig,ax = plt.subplots() 
+                    fig.suptitle(corr_title)
+                    
+                    sn.heatmap(corr_matrix, annot=True, ax=ax)
+                    
+                    st.pyplot(fig)
 
     # Normal function return
     return 0
