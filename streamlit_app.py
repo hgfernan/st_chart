@@ -191,6 +191,9 @@ class App:
         return result
     
     def show_data(self) -> bool:
+        # TODO if should scale
+            # TODO 
+        
         return True 
     
     def show_statistics(self) -> bool:
